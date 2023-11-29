@@ -7,7 +7,10 @@ module.exports = {
     extend: {
       colors:{
         backdrop:"#121212",
-        footer:"#181818"
+        footer:"#181818",
+        primary:"#1ed760",
+        highlight:"#1fdf64",
+        active:"#282828",
       }
     },
   },

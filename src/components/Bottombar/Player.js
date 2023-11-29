@@ -1,12 +1,50 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Icon } from "../../Icons";
-import songContext from "../context/SongContext";
-import { useContext } from "react";
+import songContext from "../../context/SongContext";
+import { useContext} from "react";
+import CustomRange from "../../CustomRange";
+import {useVoiceModulation} from "@specular-aura/voice-modulation";
 
 function Player({ audioElem }) {
   const context = useContext(songContext);
   const { songs, isplaying, setIsplaying, currentSong, setCurrentSong } =
     context;
+
+  const [progress,setProgress]=useState(0);
+  const currentTime=audioElem.current ? audioElem.current.currentTime : 0;
+  const duration=audioElem.current ? audioElem.current.duration : 0;
+
+  const updateProgress=()=>{
+    const newProgress=(audioElem.current.currentTime/duration)*100
+    setProgress(newProgress);
+  }
+
+  const handleTimeUpdate=()=>{
+    requestAnimationFrame(updateProgress);
+  }
+
+  const changeVoice=useVoiceModulation(
+    currentSong,
+    setCurrentSong,
+    "megaphone"
+  )
+  useEffect(()=>{
+    audioElem.current.addEventListener("timeupdate",handleTimeUpdate);
+    return()=>{
+      audioElem.current.removeEventListener("timeupdate",handleTimeUpdate);
+    }
+
+  },[audioElem,duration]);
+
+  function formatTime(timeInSeconds){
+    const minutes=Math.floor(timeInSeconds/60);
+    const seconds=Math.floor(timeInSeconds%60);
+    const formattedMinutes=String(minutes).padStart(2,"0");
+    const formattedSeconds=String(seconds).padStart(2,"0");
+    return `${formattedMinutes}:${formattedSeconds}`;
+  }
+
+
 
   const PlayPause = () => {
     if (currentSong) {
@@ -91,12 +129,46 @@ function Player({ audioElem }) {
               <Icon size={16} name="repeat"></Icon>
             </button>
           </div>
+          <div className="w-full flex items-center mt-1.5 gap-x-2">
+        <div className="text-[0.688rem] text-white text-opacity-70">
+          {formatTime(currentTime)}
+        </div>
+
+
+        <CustomRange
+           
+           value={progress}
+
+            onChange={(value) => {
+              const newTime = (value / 100) * audioElem.current.duration;
+            //   setCt(newTime);
+              audioElem.current.currentTime = newTime;
+            }}
+            onClick={() => {
+                if(!isplaying && audioElem.current)
+              audioElem.current.pause();
+            }}
+            onDragStart={() => {
+                if(!isplaying && audioElem.current)
+              audioElem.current.pause();
+            }}
+            onDragEnd={() => {
+              if (isplaying  && audioElem.current) {
+                audioElem.current.play();
+              }
+            }}
+          />
+        <div className="text-[0.688rem] text-white text-opacity-70">
+        {formatTime(duration)}
+        </div>
+      </div>
         </div>
 
         {/* RIGHT PART */}
         <div className="min-w-[11.25rem] w-[30%] flex items-center justify-end">
           <div className="flex items-center">
-            <button className="w-8 h-8 flex items-center justify-center text-white text-opacity-70 hover:text-opacity-100">
+            <button onClick={changeVoice}
+            className="w-8 h-8 flex items-center justify-center text-white text-opacity-70 hover:text-opacity-100">
               <Icon size={16} name="plus"></Icon>
             </button>
 

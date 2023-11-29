@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import Player from './Bottombar/Player'
 import { useRef } from 'react'
 import { useContext } from 'react';
-import songContext from './context/SongContext'
+import songContext from '../context/SongContext'
 
 function Bottombar() {
   const context = useContext(songContext)
